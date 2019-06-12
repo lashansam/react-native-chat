@@ -5,7 +5,7 @@ import RNfirebase from 'react-native-firebase';
 
 export default class App extends Component {
 
-onPressLogin({ uid }){
+onPressLogin({ uid, chatterID, chateeID }){
 
     let email = null;
     let password = 'password';
@@ -16,9 +16,9 @@ onPressLogin({ uid }){
         email = 'demo2@user.com'
     }
 
-    RNfirebase.auth().signInAndRetrieveDataWithEmailAndPassword(email, password)
+    RNfirebase.auth().signInWithEmailAndPassword(email, password)
     .then((user)=>{
-        NavActions.messages({ uid, user })
+        NavActions.messages({ uid })
     })
 }
 
@@ -26,9 +26,9 @@ onPressLogin({ uid }){
     return (
         <View>
             <View style={{ paddingTop : 50 }}  />
-            <Button onPress={()=>{this.onPressLogin({ uid : 1})}} title={'user 1'}/>
+            <Button onPress={()=>{this.onPressLogin({ uid : 1, chatterID : 1, chateeID : 2 })}} title={'user 1'}/>
             <View style={{ paddingTop : 50 }}  />
-            <Button onPress={()=>{this.onPressLogin({ uid : 2})}} title={'user 2'}/>
+            <Button onPress={()=>{this.onPressLogin({ uid : 2, chatterID : 2, chateeID : 1 })}} title={'user 2'}/>
         </View>
     );
   }
