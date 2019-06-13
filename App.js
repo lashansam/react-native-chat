@@ -7,20 +7,30 @@
  */
 
 import React, {Component} from 'react';
-import { StyleSheet } from 'react-native';
+import { StyleSheet, StatusBar } from 'react-native';
 import { Login, Messages, ChatScreen } from "Containers"
 import { Scene, Router, Stack } from "react-native-router-flux";
+import { Provider as PaperProvider } from 'react-native-paper';
 
 export default class App extends Component {
   render() {
     return (
-      <Router>
-        <Stack key="root">
-          <Scene key="login" component={Login} title="Login" initial />
-          <Scene key="messages" component={Messages} title="Messages"/>
-          <Scene key="chatScreen" component={ChatScreen}/>
-        </Stack>
-      </Router>
+      <PaperProvider>
+        <StatusBar backgroundColor="#34495e" barStyle="light-content" />
+        <Router
+          sceneStyle={{ backgroundColor : "#2c3e50"}}
+        >
+          <Stack key="root"
+           navigationBarStyle={{ backgroundColor : "#34495e"}}
+           titleStyle={{ color : 'white'}}
+           tintColor={'white'}
+          >
+            <Scene key="login" component={Login} title="Select your user" initial />
+            <Scene key="messages" component={Messages} title="Messages"/>
+            <Scene key="chatScreen" component={ChatScreen}/>
+          </Stack>
+        </Router>
+      </PaperProvider>
     );
   }
 }

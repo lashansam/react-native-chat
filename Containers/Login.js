@@ -1,9 +1,15 @@
 import React, {Component} from 'react';
-import {Platform, StyleSheet, Text, View, Button} from 'react-native';
+import {Platform, StyleSheet, Text, View, Image} from 'react-native';
 import { Actions as NavActions } from "react-native-router-flux";
 import RNfirebase from 'react-native-firebase';
+import { Colors } from "Theme"
+import { Banner, Button } from 'react-native-paper';
 
 export default class App extends Component {
+
+state = {
+    visible: true,
+};
 
 onPressLogin({ uid, chatterID, chateeID }){
 
@@ -22,18 +28,45 @@ onPressLogin({ uid, chatterID, chateeID }){
     })
 }
 
+changeTheme(){
+    Colors.switchTheme()
+}
+
   render() {
     return (
-        <View>
-            <View style={{ paddingTop : 50 }}  />
-            <Button onPress={()=>{this.onPressLogin({ uid : 1, chatterID : 1, chateeID : 2 })}} title={'user 1'}/>
-            <View style={{ paddingTop : 50 }}  />
-            <Button onPress={()=>{this.onPressLogin({ uid : 2, chatterID : 2, chateeID : 1 })}} title={'user 2'}/>
+        <View style={{ flex : 1, alignItems : 'center', justifyContent : 'center' }}>
+            <Button 
+                icon="account-circle" 
+                mode="contained" 
+                onPress={
+                    () => this.onPressLogin({ uid : 1, chatterID : 1, chateeID : 2 })
+                }
+                style={{ marginVertical : 10 }}
+                color="#e74c3c"
+            >
+                Login as user 1
+            </Button>
+            <Button 
+                icon="tag-faces" 
+                mode="contained" 
+                onPress={
+                    () => this.onPressLogin({ uid : 2, chatterID : 2, chateeID : 1 })
+                }
+                style={{ marginVertical : 10 }}
+                color="#e67e22"
+            >
+                Login as user 2
+            </Button>
         </View>
     );
   }
 }
 
 const styles = StyleSheet.create({
-
-});
+    bottom: {
+      position: 'absolute',
+      left: 0,
+      right: 0,
+      bottom: 0,
+    },
+  });
