@@ -25,6 +25,7 @@ onPressLogin({ uid, chatterID, chateeID }){
     RNfirebase.auth().signInWithEmailAndPassword(email, password)
     .then((user)=>{
         NavActions.messages({ uid })
+        // NavActions.chatScreen({ uid, chatterID, chateeID })
     })
 }
 

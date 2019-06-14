@@ -1,6 +1,6 @@
 import React, {Component} from 'react';
 import {Platform, StyleSheet, Text, View, Image} from 'react-native';
-import { GiftedChat, MessageImage } from 'react-native-gifted-chat'
+import { GiftedChat, Bubble, Send } from 'react-native-gifted-chat'
 import RNfirebase from 'react-native-firebase';
 
 export default class App extends Component {
@@ -10,10 +10,9 @@ export default class App extends Component {
   }
 
   componentWillMount() {
-    this.chatterRoomRef = RNfirebase.firestore().collection(`${this.props.uid}_rooms`);
-    this.chateeRoomRef = RNfirebase.firestore().collection(`${this.props.chateeID}_rooms`);
-    this.ref = RNfirebase.firestore().collection('chatData').doc(this.chatID()).collection('chats');
-    this.unsubscribe = this.ref.orderBy('createdAt', "desc").onSnapshot(this.onCollectionUpdate);
+    this.roomRef = RNfirebase.firestore().collection('chatData');
+    this.messagesRef = RNfirebase.firestore().collection('chatData').doc(this.chatID()).collection('chats');
+    this.unsubscribe = this.messagesRef.orderBy('createdAt', "desc").onSnapshot(this.onCollectionUpdate);
   }
 
   onCollectionUpdate = (querySnapshot) => {
@@ -22,7 +21,7 @@ export default class App extends Component {
       const message = docSnapshot.data();
 
       if(message.user._id!==this.props.uid){
-        this.ref.doc(docSnapshot.id).update("received", true)
+        this.messagesRef.doc(docSnapshot.id).update("received", true)
       }
 
       return {
@@ -50,52 +49,49 @@ export default class App extends Component {
   onSend(messages = []) {
     messages[0].sent = true;
     messages[0].received = false;
-    this.chatterRoomRef.get().then((response)=>{
-      const roomAlreadyExist = response.docs.filter((doc)=>{
-
-        console.log("TCL: onSend -> doc.data().id", doc.data().id)
-
-        if(doc.data().id===this.props.chateeID){
-          return true;
-        } else {
-          false;
-        } 
-      })
-      
-      console.log("TCL: onSend -> roomAlreadyExist", roomAlreadyExist);
-
-      if(roomAlreadyExist.length === 0){
-        this.chatterRoomRef.add({ id: this.props.chateeID })
-      }
+    this.roomRef.doc(this.chatID()).set({
+      usersInRoom : [{
+          id : this.props.chatterID,
+          name: this.props.uid===1? 'User 1' : 'User 2',
+          avatar : `https://placeimg.com/140/140/${this.props.uid}`
+      }, {
+          id : this.props.chateeID,
+          name: this.props.uid!==1? 'User 1' : 'User 2',
+          avatar : `https://placeimg.com/140/140/${this.props.uid==1? 2 : 1}`
+      }]
     })
-
-    this.chateeRoomRef.get().then((response)=>{
-      const roomAlreadyExist = response.docs.filter((doc)=>{
-
-        console.log("TCL: onSend -> doc.data().id", doc.data().id)
-
-        if(doc.data().id===this.props.chatterID){
-          return true;
-        } else {
-          false;
-        } 
-      })
-      
-      console.log("TCL: onSend -> roomAlreadyExist", roomAlreadyExist);
-
-      if(roomAlreadyExist.length === 0){
-        this.chateeRoomRef.add({ id: this.props.chatterID })
-      }
-    })
-    this.ref.add(messages[0]);
+    this.messagesRef.add(messages[0]);
   }
+
+  renderBubble (props) {
+    return (
+      <Bubble
+        {...props}
+        wrapperStyle={{
+          right: {
+            backgroundColor: "#34495e"
+          },
+          left: {
+            backgroundColor: "#ecf0f1"
+          }
+        }}
+      />
+    )
+  }
+
+  renderSend (props) {
+    return <Send {...props} textStyle={{ color: "#34495e"  }} label={'Send'} />
+  }
+
 
 
   render() {
 
     return (
       <GiftedChat
+        renderBubble={this.renderBubble}
         showUserAvatar={true}
+        renderSend={this.renderSend}
         renderMessageImage={()=>{
           <View>
             <Image
@@ -107,8 +103,9 @@ export default class App extends Component {
         messages={this.state.messages}
         onSend={messages => this.onSend(messages)}
         user={{
+          name: this.props.uid===1? 'User 1' : 'User 2',
           _id: this.props.uid,
-          avatar: 'https://placeimg.com/140/140/any'
+          avatar: `https://placeimg.com/140/140/${this.props.uid}`
         }}
       />
     );

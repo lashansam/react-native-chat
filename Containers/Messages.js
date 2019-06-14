@@ -8,24 +8,28 @@ export default class App extends Component {
 
   state = {
     chatRooms: [],
+    currentUserName : this.props.uid===1? 'User 1' : 'User 2'
   }
 
   componentWillMount() {
-    this.ref = RNfirebase.firestore().collection(`${this.props.uid}_rooms`)
-    console.log("TCL: App -> componentWillMount -> this.props.uid", this.props.uid)
+    this.ref = RNfirebase.firestore().collection(`chatData`).where("usersInRoom", "array-contains", {
+      id : this.props.uid,
+      name: this.props.uid===1? 'User 1' : 'User 2',
+      avatar : `https://placeimg.com/140/140/${this.props.uid}`
+    })
+
     this.unsubscribe = this.ref.onSnapshot(this.onCollectionUpdate);
   }
 
   onCollectionUpdate = (querySnapshot) => {
-    console.log("TCL: App -> onCollectionUpdate -> querySnapshot", querySnapshot)
-    
     const chatRooms = querySnapshot.docs.map((docSnapshot)=>{
-      return docSnapshot.data()
+      console.log("TCL: App -> onCollectionUpdate -> docSnapshot", )
+      const chatRoomUserInfo = docSnapshot.data().usersInRoom;
+      const chattee = chatRoomUserInfo.filter((user)=>user.name!==this.state.currentUserName)
+      return chattee[0];
     });
-    
 
     this.setState({ chatRooms })
-    // console.log("TCL: App -> onCollectionUpdate -> chatRooms", chatRooms)
     
   }
 
@@ -36,22 +40,21 @@ export default class App extends Component {
 
   render() {
 
-    console.log("TCL: App -> onCollectionUpdate -> chatRooms", this.state.chatRooms)
-
     return (
         <View>
             <FlatList 
               data={this.state.chatRooms}
               keyExtractor={(item, index)=> `${index}`}
               renderItem={({item, index})=>{
-                return (<TouchableOpacity onPress={()=>NavActions.chatScreen({uid : this.props.uid, chatterID : this.props.uid, chateeID : item.id })}>
+                return (
+                <TouchableOpacity onPress={()=>NavActions.chatScreen({uid : this.props.uid, chatterID : this.props.uid, chateeID : item.id })}>
                   <View style={{ backgroundColor : '#34495e', margin : 10, borderRadius : 10, borderWidth : 1, borderColor : '#42586E' }}>
                     <List.Item
                       titleStyle={{ color : 'white'}}
                       descriptionStyle={{ color : '#7D8F98'}}
-                      title={`Chat with User ${item.id}`}
+                      title={`Chat with ${item.name}`}
                       description="recent chat"
-                      left={props => <View style={{ justifyContent : 'center', alignItems : 'center'}}><Avatar.Image size={40} source={{ uri : 'https://placeimg.com/140/140/any'}}/></View>}
+                      left={props => <View style={{ justifyContent : 'center', alignItems : 'center'}}><Avatar.Image style={{ backgroundColor : 'transparent' }} {...props} size={40} source={{ uri : item.avatar }}/></View>}
                     />
                   </View>
                 </TouchableOpacity>)
